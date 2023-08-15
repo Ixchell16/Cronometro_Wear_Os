@@ -1,0 +1,86 @@
+using System;
+
+using Android.App;
+using Android.Widget;
+using Android.OS;
+using Android.Support.Wearable.Activity;
+using System.Timers;
+using Javax.Security.Auth;
+
+namespace CrnometroApp
+{
+    [Activity(Label = "@string/app_name", MainLauncher = true)]
+    public class MainActivity : WearableActivity
+    {
+        TextView textTimer;
+        int count = 1;
+        Timer timer;
+        int min = 0, sec = 0, milisec = 1;
+        bool activo = false;
+
+        protected override void OnCreate(Bundle bundle)
+        {
+            base.OnCreate(bundle);
+            SetContentView(Resource.Layout.activity_main);
+
+            Button botoninicio = FindViewById<Button>(Resource.Id.botonComenzar);
+            Button botonparar = FindViewById<Button>(Resource.Id.botonDetener);
+            Button botonborrar = FindViewById<Button>(Resource.Id.botonEliminar);
+            textTimer = FindViewById<TextView>(Resource.Id.result);
+
+            botoninicio.Click += delegate
+            {
+                timer = new Timer();
+                timer.Interval = 1;
+                timer.Elapsed += Timer_Elapsed;
+                activo = true;
+                timer.Start();
+            };
+            botonparar.Click += delegate
+            {
+                activo = false;
+                timer.Stop();
+            };
+            botonborrar.Click += delegate
+            {
+                if (activo == true)
+                {
+                    timer.Stop();
+                    milisec = 0;
+                    sec = 0;
+                    min = 0;
+                }
+                else
+                {
+                    milisec = 0;
+                    sec = 0;
+                    min = 0;
+                    RunOnUiThread(() =>
+                    {
+                        textTimer.Text = String.Format("{0}:{1:00}:{2:000}", min, sec, milisec);
+                    });
+                }
+
+            };
+        }
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            milisec++;
+            if (milisec >= 100)
+            {
+                sec++;
+                milisec = 0;
+            }
+            if (sec >= 59)
+            {
+                min++;
+                sec = 0;
+            }
+            RunOnUiThread(() =>
+            {
+                textTimer.Text = String.Format("{0}:{1:00}:{2:000}", min, sec, milisec);
+            });
+            throw new NotImplementedException();
+        }
+    }
+}
